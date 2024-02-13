@@ -1,44 +1,55 @@
+import abc
+
 import torch
 from torch import nn
 
 import lightning as pl
 
-class _BaseModel(pl.LightningModule):
+def _make_criterion(criterion, criterion_kwargs):
+    match criterion:
+        case 'cross_entropy':
+            return nn.CrossEntropyLoss(**criterion_kwargs)
+        case 'nll':
+            return nn.NLLLoss(**criterion_kwargs)
+        case 'mse':
+            return nn.MSELoss(**criterion_kwargs)
+        case 'bce':
+            return nn.BCELoss(**criterion_kwargs)
+        case _:
+            raise ValueError(f'Unknown criterion {criterion}')
+        
+def _make_optimizer(optimizer):
+    match optimizer:
+        case 'adam':
+            return torch.optim.Adam
+        case 'sgd':
+            return torch.optim.SGD
+        case _:
+            raise ValueError(f'Unknown optimizer {optimizer}')
+
+
+class _BaseLightningModule(pl.LightningModule, metaclass=abc.ABCMeta):
     def __init__(self, *,
                  criterion='cross_entropy', criterion_kwargs=None,
                  optimizer='adam', optimizer_kwargs=None):
         super().__init__()
-        self._extra_metrics = {}
+        self._extra_metrics = {}  # TODO: Extra metrics are not registered in the LightningModule
         self.history = {'train': {'loss': []}, 'val': {'loss': []}, 'epoch': []}
         self.data_lengths = {'train': 0, 'val': 0}
         self.model = None
         # Make criterion
         criterion_kwargs = criterion_kwargs or {}
-        match criterion:
-            case 'cross_entropy':
-                self._criterion = nn.CrossEntropyLoss(**criterion_kwargs)
-            case 'nll':
-                self._criterion = nn.NLLLoss(**criterion_kwargs)
-            case 'mse':
-                self._criterion = nn.MSELoss(**criterion_kwargs)
-            case 'bce':
-                self._criterion = nn.BCELoss(**criterion_kwargs)
-            case _:
-                raise ValueError(f'Unknown criterion {criterion}')
+        self.criterion = _make_criterion(criterion, criterion_kwargs)
         # Make optimizer
         self.optimizer_kwargs = optimizer_kwargs or {}
-        match optimizer:
-            case 'adam':
-                self._optimizer_cls = torch.optim.Adam
-            case 'sgd':
-                self._optimizer_cls = torch.optim.SGD
-            case _:
-                raise ValueError(f'Unknown optimizer {optimizer}')
+        self._optimizer_cls = _make_optimizer(optimizer)
 
     def configure_optimizers(self):
         return self._optimizer_cls(self.parameters(), **self.optimizer_kwargs)
 
     def forward(self, *args, **kwargs):
+        assert self.model is not None,\
+            'Model not defined. Please, instantiate a model and assign it to "self.model".'
         return self.model(*args, **kwargs)  # _model should be defined in the subclass
 
     def training_step(self, batch, batch_idx, dataloader_idx=None):
@@ -81,10 +92,11 @@ class _BaseModel(pl.LightningModule):
             self.history['val'][name][-1] /= self.data_lengths['val']
 
     def _shared_step(self, batch, batch_idx, step=None):
+        assert self.model is not None, 'Model not defined. Please, instantiate a model and assign it to "self.model".'
         x, y = batch
         self.data_lengths[step] += len(x)
         y_hat = self(x)
-        loss = self._criterion(y_hat, y)
+        loss = self.criterion(y_hat, y)
         if step is not None:
             log_dict = {f'{step}_loss': loss}
             self.history[step]['loss'][-1] += loss.item() * x.size(0)

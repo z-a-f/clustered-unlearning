@@ -2,9 +2,13 @@ from torch import nn
 import torchvision
 import torchmetrics
 
-from ._base import _BaseModel
+from ._base import _BaseLightningModule
 
-class ResNet18(_BaseModel):
+__all__ = [
+    'ResNet18'
+]
+
+class ResNet18(_BaseLightningModule):
     def __init__(self, num_outputs=10, fc_hidden=None, weights='DEFAULT',
                  criterion='cross_entropy',
                  optimizer='adam',

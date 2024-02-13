@@ -1,8 +1,12 @@
 
 import torchvision
-from ._base import _BaseData
+from ._base import _BaseLightningDataModule
 
-class CIFAR10Data(_BaseData):
+__all__ = [
+    'CIFAR10LightningDataModule'
+]
+
+class CIFAR10LightningDataModule(_BaseLightningDataModule):
     def __init__(self, root, batch_size=512, train_fraction=1.0,
                  num_workers=None, pin_memory=False):
         val_transform = torchvision.transforms.Compose([
