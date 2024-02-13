@@ -5,7 +5,8 @@ trainer:
   strategy: auto
   devices: auto
   num_nodes: 1
-  logger: null  # Set to 'wandb' or 'tensorboard' to enable logging
+  logger:  # Set to 'wandb' or 'tensorboard' to enable logging
+    class_path: lightning.pytorch.loggers.wandb.WandbLogger
   callbacks:
   - class_path: lightning.pytorch.callbacks.ModelSummary
     init_args:

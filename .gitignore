@@ -1,3 +1,4 @@
+config.yaml
 data/
 lightning_logs/
 wandb/
