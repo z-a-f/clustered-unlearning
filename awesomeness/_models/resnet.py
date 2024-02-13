@@ -5,11 +5,13 @@ import torchmetrics
 from ._base import _BaseLightningModule
 
 __all__ = [
-    'ResNet18'
+    'ResNet18LightningModule'
 ]
 
-class ResNet18(_BaseLightningModule):
-    def __init__(self, num_outputs=10, fc_hidden=None, weights='DEFAULT',
+class ResNet18LightningModule(_BaseLightningModule):
+    def __init__(self, num_outputs=10,
+                 fc_hidden=None,
+                 weights='DEFAULT',
                  criterion='cross_entropy',
                  optimizer='adam',
                  lr=0.001):
@@ -31,6 +33,5 @@ class ResNet18(_BaseLightningModule):
                 task=('multiclass' if self.num_classes > 1 else 'binary'),
                 num_classes=self.num_classes)
         self._extra_metrics['accuracy'] = self.accuracy
-
         # Save per epoch history
         self.save_hyperparameters()

@@ -1,5 +1,11 @@
-from ._models import resnet
-from ._models.resnet import *
+__all__ = [
+    # Packages
+    'resnet',
+    # Modules
+    'BaseLightningModule',
+    'ResNet18LightningModule',
+]
 
-# Also get the base classes
+from ._models import resnet
 from ._models._base import _BaseLightningModule as BaseLightningModule
+from ._models.resnet import ResNet18LightningModule
