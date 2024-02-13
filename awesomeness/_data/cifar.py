@@ -15,6 +15,7 @@ class CIFAR10LightningDataModule(_BaseLightningDataModule):
         ])
         train_transform = torchvision.transforms.Compose([
             torchvision.transforms.RandomHorizontalFlip(),
+            torchvision.transforms.RandomRotation(10),
             torchvision.transforms.RandomCrop(32, padding=4),
             val_transform,
         ])
@@ -26,4 +27,5 @@ class CIFAR10LightningDataModule(_BaseLightningDataModule):
             train_transform=train_transform,
             val_transform=val_transform,
             num_workers=num_workers,
-            pin_memory=pin_memory)
+            pin_memory=pin_memory,
+        )

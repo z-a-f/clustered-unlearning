@@ -4,6 +4,32 @@ import torch
 
 import lightning as pl
 
+class _Subset(torch.utils.data.Subset):
+    r'''A subset of a dataset.
+    
+    From https://pytorch.org/docs/stable/data.html#torch.utils.data.Subset
+    '''
+    def __init__(self, another_subset: torch.utils.data.Subset, transform=None):
+        assert isinstance(another_subset, torch.utils.data.Subset)
+        super().__init__(another_subset.dataset, another_subset.indices)
+        self.transform = transform
+
+    def __getitem__(self, index):
+        x, y = super().__getitem__(index)
+        if self.transform:
+            x = self.transform(x)
+        return x, y
+    
+    def __getitems__(self, indices):
+        if callable(getattr(self.dataset, '__getitems__', None)):
+            return self.transform(self.dataset.__getitems__([self.indices[idx] for idx in indices]))
+        else:
+            return [self.__getitem__(idx) for idx in indices]
+    
+    def __len__(self):
+        return len(self.indices)
+
+
 class _BaseLightningDataModule(pl.LightningDataModule):
     def __init__(self, root,
                  dataset_cls,
@@ -30,15 +56,19 @@ class _BaseLightningDataModule(pl.LightningDataModule):
     
     def setup(self, stage=None):
         if stage == 'fit' or stage is None:
-            train_dataset = self._dataset_cls(root=self.root, train=True, download=False, transform=self.train_transform)
             if self.train_fraction < 1.0:
+                train_dataset = self._dataset_cls(root=self.root, train=True, download=False, transform=None)
                 train_len = int(len(train_dataset) * self.train_fraction)
                 self.train_dataset, self.val_dataset = torch.utils.data.random_split(
                     train_dataset, [train_len, len(train_dataset) - train_len]
                 )
+                self.train_dataset = _Subset(self.train_dataset)
+                self.val_dataset = _Subset(self.val_dataset)
             else:
                 self.train_dataset = train_dataset
-                self.val_dataset = self._dataset_cls(root=self.root, train=False, download=False, transform=self.val_transform)
+                self.val_dataset = self._dataset_cls(root=self.root, train=False, download=False, transform=None)
+            self.train_dataset.transform = self.train_transform
+            self.val_dataset.transform = self.val_transform
         elif stage == 'test':
             self.test_dataset = self._dataset_cls(root=self.root, train=False, download=False, transform=self.val_transform)
         elif stage == 'predict':
