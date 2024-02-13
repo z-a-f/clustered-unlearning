@@ -7,6 +7,8 @@ import lightning as pl
 
 def _make_criterion(criterion, criterion_kwargs):
     match criterion:
+        case torch.nn.Module():
+            return criterion
         case 'cross_entropy':
             return nn.CrossEntropyLoss(**criterion_kwargs)
         case 'nll':
@@ -20,6 +22,8 @@ def _make_criterion(criterion, criterion_kwargs):
         
 def _make_optimizer(optimizer):
     match optimizer:
+        case torch.optim.Optimizer():
+            return optimizer
         case 'adam':
             return torch.optim.Adam
         case 'sgd':
