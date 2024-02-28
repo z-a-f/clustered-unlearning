@@ -1,0 +1,4 @@
+model:
+  class_path: awesomeness.models.ResNet18LightningModule
+  init_args:
+    weights: DEFAULT

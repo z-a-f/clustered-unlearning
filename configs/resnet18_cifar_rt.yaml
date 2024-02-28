@@ -1,0 +1,17 @@
+# lightning.pytorch==2.1.3
+trainer:
+  max_epochs: 160
+data:
+  init_args:
+    batch_size: 256
+optimizer:
+  class_path: torch.optim.AdamW
+  init_args:
+    lr: 0.01
+    betas:
+    - 0.9
+    - 0.999
+    eps: 1.0e-08
+    weight_decay: 0.0005
+    amsgrad: false
+    maximize: false

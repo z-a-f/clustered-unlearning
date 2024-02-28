@@ -1,0 +1,10 @@
+model:
+  init_args:
+    num_outputs: 10
+data:
+  class_path: awesomeness.data.CIFAR10LightningDataModule
+  init_args:
+    root: ./data
+    train_fraction: 0.8
+    num_workers: null
+    pin_memory: false

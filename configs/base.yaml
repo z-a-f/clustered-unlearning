@@ -6,10 +6,10 @@ trainer:
   devices: auto
   num_nodes: 1
   logger:  # Set to 'wandb' or 'tensorboard' to enable logging
-    class_path: lightning.pytorch.loggers.wandb.WandbLogger
-    init_args:
-      save_dir: '.'
-      project: resnet18_cifar
+    # class_path: lightning.pytorch.loggers.wandb.WandbLogger
+    # init_args:
+    #   save_dir: '.'
+    #   project: resnet18_cifar
   callbacks:
   - class_path: lightning.pytorch.callbacks.ModelSummary
     init_args:
@@ -33,38 +33,7 @@ trainer:
       verbose: false
       mode: min
   fast_dev_run: false  # Set to true for debugging
-  max_epochs: 60
   enable_checkpointing: null
   enable_progress_bar: null
   enable_model_summary: true
 ckpt_path: null
-model:
-  class_path: awesomeness.models.ResNet18LightningModule
-  init_args:
-    num_outputs: 10
-    fc_hidden: [128, 64]
-    weights: DEFAULT
-    criterion:
-      class_path: torch.nn.CrossEntropyLoss
-      init_args:
-        weight: null
-        reduction: mean
-data:
-  class_path: awesomeness.data.CIFAR10LightningDataModule
-  init_args:
-    root: ./data
-    batch_size: 512
-    train_fraction: 0.8
-    num_workers: null
-    pin_memory: false
-optimizer:
-  class_path: torch.optim.AdamW
-  init_args:
-    lr: 0.003
-    betas:
-    - 0.9
-    - 0.999
-    eps: 1.0e-08
-    weight_decay: 0.01
-    amsgrad: false
-    maximize: false

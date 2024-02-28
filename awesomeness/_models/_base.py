@@ -6,6 +6,8 @@ from torch import nn
 import lightning as pl
 
 def _make_criterion(criterion, criterion_kwargs):
+    if criterion is None:
+        return criterion
     match criterion:
         case torch.nn.Module():
             return criterion
@@ -19,8 +21,10 @@ def _make_criterion(criterion, criterion_kwargs):
             return nn.BCELoss(**criterion_kwargs)
         case _:
             raise ValueError(f'Unknown criterion {criterion}')
-        
+
 def _make_optimizer(optimizer):
+    if optimizer is None:
+        return optimizer
     match optimizer:
         case torch.optim.Optimizer():
             return optimizer
